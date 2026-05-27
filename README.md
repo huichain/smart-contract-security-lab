@@ -9,7 +9,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 
 In progress. Started on Day 1.
 
-## Day 1-3 — Reentrancy: Vulnerable Vault, Exploit PoC, and Fix
+## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
 
 - [x] `src/reentrancy/VulnerableVault.sol`
   A minimal ETH vault that sends ETH to the user **before** updating the user's balance, which makes it vulnerable to reentrancy.
@@ -22,7 +22,8 @@ In progress. Started on Day 1.
   - `testExploit_DrainsVault` — the attack drains a 10 ETH vault with 1 ETH of attacker capital
   - `testFix_BlocksReentrancy` — the same attacker against `FixedVault` reverts and victim funds remain safe
   - `testFix_AllowsHonestWithdraw` — sanity check that the fix does not break legitimate users
-- [ ] Short writeup (Day 4)
+- [x] [`reports/01-reentrancy.md`](reports/01-reentrancy.md)
+  Audit-style writeup: severity, summary, root cause, PoC, recommendation, fixed implementation, and learnings.
 
 ## Project Structure
 
@@ -41,12 +42,12 @@ smart-contract-security-lab/
 │     ├─ VulnerableVault.sol
 │     ├─ ReentrancyAttacker.sol
 │     └─ FixedVault.sol
-└─ test/
-   └─ reentrancy/
-      └─ ReentrancyPoC.t.sol
+├─ test/
+│  └─ reentrancy/
+│     └─ ReentrancyPoC.t.sol
+└─ reports/
+   └─ 01-reentrancy.md
 ```
-
-`reports/` directory will be added on Day 4.
 
 ## Dependencies
 
@@ -110,7 +111,7 @@ forge test
 
 | Vulnerability | Status |
 | --- | --- |
-| Reentrancy | Implementation done (Day 1-3); writeup pending (Day 4) |
+| Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | Planned |
 | Signature Replay | Planned |
 | Oracle Manipulation | Planned |
