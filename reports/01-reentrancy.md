@@ -4,9 +4,31 @@
 
 Reentrancy in `VulnerableVault.withdraw` allows an attacker to drain the vault with minimal capital.
 
-## Severity
+## Metadata
 
-**High** — direct financial loss, exploitable by any user able to deploy a contract.
+| | |
+| --- | --- |
+| **Severity** | High |
+| **Difficulty** | Low |
+| **Type** | Data Validation / State Management |
+| **Target** | `src/reentrancy/VulnerableVault.sol` |
+| **Finding ID** | SCSL-REENT-01 |
+
+## Severity Rationale
+
+Rated **High** because the flaw causes direct financial loss with no privileged access required: any user able to deploy a contract can drain all ETH held by the vault, with minimal capital and no special role.
+
+Difficulty is rated **Low**: the attack is well known, public tooling and reference exploits exist (e.g. The DAO 2016), and the exploit contract is fewer than 20 lines.
+
+Severity tiers used in this lab (aligned with common audit firm conventions):
+
+| Severity | Description |
+| --- | --- |
+| Critical | Catastrophic financial loss or complete protocol takeover. |
+| High | Significant financial loss or core functionality break. |
+| Medium | Real impact but requires specific conditions. |
+| Low | Limited impact, hard to exploit, or only edge cases. |
+| Informational | Best-practice / code quality issues. |
 
 ## Summary
 
@@ -81,7 +103,9 @@ address(attacker).balance    == 11 ether  (10 from victim + 1 own deposit)
 
 ## Recommendation
 
-Apply Checks-Effects-Interactions: update state **before** any external call.
+### Short term
+
+Apply Checks-Effects-Interactions in `withdraw`: update state **before** the external ETH transfer.
 
 ```solidity
 function withdraw(uint256 amount) external nonReentrant {
@@ -96,17 +120,26 @@ function withdraw(uint256 amount) external nonReentrant {
 }
 ```
 
-For defense in depth, also add OpenZeppelin's `ReentrancyGuard`:
+This single change is sufficient to neutralize the classic reentrancy pattern shown in the PoC: any nested re-entry now sees a debited balance and is rejected by the `require` check.
 
-```solidity
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+### Long term
 
-contract FixedVault is ReentrancyGuard {
-    // ...
-}
-```
+1. Add OpenZeppelin's `ReentrancyGuard` to every external function that sends ETH or tokens, as defense in depth:
 
-The two protections are independent:
+   ```solidity
+   import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+   contract FixedVault is ReentrancyGuard {
+       function withdraw(uint256 amount) external nonReentrant {
+           // ...
+       }
+   }
+   ```
+
+2. Adopt CEI as a project-wide invariant: every state mutation must happen before any external call. Enforce this through code review checklists and lint rules.
+3. Cover the invariant with regression tests so future refactors that move the external call earlier are caught automatically. See `testFix_BlocksReentrancy` for an example.
+
+The two protections are independent and complementary:
 
 - **CEI** makes the re-entrancy benign: the second call sees a debited balance and the `require` rejects it.
 - **`nonReentrant`** prevents the second call from running at all.
