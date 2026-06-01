@@ -14,7 +14,7 @@ contract AccessControlPoC is Test {
     VulnerableTreasury internal treasury;
 
     address internal contributor = makeAddr("contributor");
-    address internal attackerEOA = makeAddr("attackerEOA");
+    address internal attackerEoa = makeAddr("attackerEoa");
 
     uint256 internal constant TREASURY_BALANCE = 10 ether;
 
@@ -33,14 +33,14 @@ contract AccessControlPoC is Test {
     /// @notice PoC #1: any external account can call `withdraw` and drain the treasury.
     ///         No ownership or role is required — the function is `external` with no guard.
     function testExploit_AnyoneCanDrainTreasury() public {
-        uint256 attackerBalanceBefore = attackerEOA.balance;
+        uint256 attackerBalanceBefore = attackerEoa.balance;
 
-        vm.prank(attackerEOA);
-        treasury.withdraw(payable(attackerEOA), TREASURY_BALANCE);
+        vm.prank(attackerEoa);
+        treasury.withdraw(payable(attackerEoa), TREASURY_BALANCE);
 
         assertEq(address(treasury).balance, 0, "treasury should be fully drained");
         assertEq(
-            attackerEOA.balance,
+            attackerEoa.balance,
             attackerBalanceBefore + TREASURY_BALANCE,
             "attacker should receive all treasury ETH"
         );
@@ -52,10 +52,10 @@ contract AccessControlPoC is Test {
     function testExploit_AnyoneCanBecomeOwner() public {
         assertEq(treasury.owner(), address(this), "initial owner should be deployer");
 
-        vm.prank(attackerEOA);
-        treasury.setOwner(attackerEOA);
+        vm.prank(attackerEoa);
+        treasury.setOwner(attackerEoa);
 
-        assertEq(treasury.owner(), attackerEOA, "attacker should now own the treasury");
+        assertEq(treasury.owner(), attackerEoa, "attacker should now own the treasury");
     }
 
     /// @notice Attacker cannot drain `FixedTreasury`; funds stay in the contract.
@@ -68,18 +68,18 @@ contract AccessControlPoC is Test {
 
         assertEq(address(fixedTreasury).balance, TREASURY_BALANCE);
 
-        vm.prank(attackerEOA);
+        vm.prank(attackerEoa);
         vm.expectRevert(
-            abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attackerEOA)
+            abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attackerEoa)
         );
-        fixedTreasury.withdraw(payable(attackerEOA), TREASURY_BALANCE);
+        fixedTreasury.withdraw(payable(attackerEoa), TREASURY_BALANCE);
 
         assertEq(
             address(fixedTreasury).balance,
             TREASURY_BALANCE,
             "treasury must keep all funds after blocked withdraw"
         );
-        assertEq(attackerEOA.balance, 0, "attacker must not receive any ETH");
+        assertEq(attackerEoa.balance, 0, "attacker must not receive any ETH");
     }
 
     /// @notice Attacker cannot seize ownership of `FixedTreasury`.
@@ -87,11 +87,11 @@ contract AccessControlPoC is Test {
         FixedTreasury fixedTreasury = new FixedTreasury();
         address initialOwner = fixedTreasury.owner();
 
-        vm.prank(attackerEOA);
+        vm.prank(attackerEoa);
         vm.expectRevert(
-            abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attackerEOA)
+            abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attackerEoa)
         );
-        fixedTreasury.setOwner(attackerEOA);
+        fixedTreasury.setOwner(attackerEoa);
 
         assertEq(fixedTreasury.owner(), initialOwner, "owner must not change");
     }

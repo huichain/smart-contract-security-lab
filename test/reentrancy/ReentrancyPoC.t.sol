@@ -17,7 +17,7 @@ contract ReentrancyPoC is Test {
     ReentrancyAttacker internal attacker;
 
     address internal victim = makeAddr("victim");
-    address internal attackerEOA = makeAddr("attackerEOA");
+    address internal attackerEoa = makeAddr("attackerEoa");
 
     uint256 internal constant VICTIM_DEPOSIT = 10 ether;
     uint256 internal constant ATTACK_UNIT = 1 ether;
@@ -28,7 +28,7 @@ contract ReentrancyPoC is Test {
 
         // Fund the EOAs that will interact with the vault.
         vm.deal(victim, VICTIM_DEPOSIT);
-        vm.deal(attackerEOA, ATTACK_UNIT);
+        vm.deal(attackerEoa, ATTACK_UNIT);
     }
 
     /// @notice Full PoC: attacker drains a 10 ETH vault with only 1 ETH of
@@ -40,7 +40,7 @@ contract ReentrancyPoC is Test {
         assertEq(address(vault).balance, VICTIM_DEPOSIT, "vault should hold victim deposit");
 
         // 2. Attacker fires the exploit using only `ATTACK_UNIT` of their own ETH.
-        vm.prank(attackerEOA);
+        vm.prank(attackerEoa);
         attacker.attack{value: ATTACK_UNIT}();
 
         // 3. The vault should be fully drained.
@@ -66,7 +66,7 @@ contract ReentrancyPoC is Test {
         assertEq(address(fixedVault).balance, VICTIM_DEPOSIT);
 
         // Attacker fires the same exploit; the whole transaction must revert.
-        vm.prank(attackerEOA);
+        vm.prank(attackerEoa);
         vm.expectRevert();
         fixedAttacker.attack{value: ATTACK_UNIT}();
 

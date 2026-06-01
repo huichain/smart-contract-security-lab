@@ -117,7 +117,7 @@ forge test --match-test testExploit_AnyoneCanBecomeOwner -vvv
 ```
 
 Test file: `test/access-control/AccessControlPoC.t.sol`  
-No separate attacker contract — exploits use `vm.prank(attackerEOA)` to simulate a real EOA.
+No separate attacker contract — exploits use `vm.prank(attackerEoa)` to simulate a real EOA.
 
 ### Attack flow — SCSL-AC-01
 
