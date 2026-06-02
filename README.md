@@ -9,7 +9,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 
 - ✅ **Reentrancy** module complete — vulnerable contract, attacker, fix, 3 passing tests, audit-style writeup
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
-- 🟡 **Signature Replay** module started — vulnerable airdrop contract compiles; PoC, fix, and writeup next
+- 🟡 **Signature Replay** module in progress — vulnerable airdrop contract + replay PoC test, fix and writeup next
 - ⚪ Oracle Manipulation, Upgradeable Proxy — planned
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
@@ -48,8 +48,9 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 
 - [x] `src/signature-replay/VulnerableAirdrop.sol`
   A deliberately vulnerable ETH airdrop that accepts an off-chain signature from a trusted signer, but the signed message only binds `account` and `amount`.
-- [ ] `test/signature-replay/SignatureReplayPoC.t.sol`
-  Planned PoC test: reuse the exact same signature twice and prove the claimant receives the airdrop twice.
+- [x] `test/signature-replay/SignatureReplayPoC.t.sol`
+  Foundry PoC test suite:
+  - `testExploit_SameSignatureClaimsTwice` — reuses the exact same signature twice and proves the claimant receives the airdrop twice
 - [ ] `src/signature-replay/FixedAirdrop.sol`
   Planned fix: bind signatures to nonce, deadline, chain id, and `address(this)`.
 - [ ] `reports/03-signature-replay.md`
@@ -81,8 +82,10 @@ smart-contract-security-lab/
 ├─ test/
 │  ├─ reentrancy/
 │  │  └─ ReentrancyPoC.t.sol
-│  └─ access-control/
-│     └─ AccessControlPoC.t.sol
+│  ├─ access-control/
+│  │  └─ AccessControlPoC.t.sol
+│  └─ signature-replay/
+│     └─ SignatureReplayPoC.t.sol
 └─ reports/
    ├─ 01-reentrancy.md
    └─ 02-access-control.md
@@ -138,7 +141,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **8 passing tests** across two complete modules. The Signature Replay module has started with a vulnerable contract and will add tests next.
+The lab currently ships with **9 passing tests** across two complete modules plus the in-progress Signature Replay module.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -153,6 +156,10 @@ The lab currently ships with **8 passing tests** across two complete modules. Th
 - `testFix_BlocksUnauthorizedWithdraw` — proves `FixedTreasury` blocks unauthorized withdrawals.
 - `testFix_BlocksUnauthorizedSetOwner` — proves unauthorized ownership transfer reverts.
 - `testFix_AllowsOwnerFunctions` — sanity check that the owner can still operate the treasury.
+
+**Signature Replay** (`test/signature-replay/`):
+
+- `testExploit_SameSignatureClaimsTwice` — proves the same signature can be replayed to claim twice.
 
 Run all tests:
 
@@ -174,7 +181,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | --- | --- |
 | Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
-| Signature Replay | 🟡 In progress — vulnerable airdrop contract added |
+| Signature Replay | 🟡 In progress — vulnerable airdrop + replay PoC test |
 | Oracle Manipulation | ⚪ Planned |
 | Upgradeable Proxy | ⚪ Planned |
 
