@@ -9,7 +9,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 
 - ✅ **Reentrancy** module complete — vulnerable contract, attacker, fix, 3 passing tests, audit-style writeup
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
-- 🟡 **Signature Replay** module in progress — vulnerable airdrop, fixed implementation, and 3 passing tests; writeup next
+- ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
 - ⚪ Oracle Manipulation, Upgradeable Proxy — planned
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
@@ -44,7 +44,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - [x] [`reports/02-access-control.md`](reports/02-access-control.md)
   Audit-style writeup: two findings (`withdraw`, `setOwner`), severity, PoC, recommendation, fixed implementation, and learnings.
 
-## Signature Replay — Vulnerable Airdrop, Replay PoC, Fix
+## Signature Replay — Vulnerable Airdrop, Replay PoC, Fix, and Writeup
 
 - [x] `src/signature-replay/VulnerableAirdrop.sol`
   A deliberately vulnerable ETH airdrop that accepts an off-chain signature from a trusted signer, but the signed message only binds `account` and `amount`.
@@ -55,8 +55,8 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
   - `testFix_RejectsExpiredSignature` — proves expired signatures cannot be used
 - [x] `src/signature-replay/FixedAirdrop.sol`
   Fixed implementation: binds signatures to nonce, deadline, chain id, and `address(this)`.
-- [ ] `reports/03-signature-replay.md`
-  Planned audit-style writeup covering replay impact, root cause, PoC, and mitigation.
+- [x] [`reports/03-signature-replay.md`](reports/03-signature-replay.md)
+  Audit-style writeup: severity, replay impact, root cause, PoC, recommendation, fixed implementation, and learnings.
 
 ## Project Structure
 
@@ -91,7 +91,8 @@ smart-contract-security-lab/
 │     └─ SignatureReplayPoC.t.sol
 └─ reports/
    ├─ 01-reentrancy.md
-   └─ 02-access-control.md
+   ├─ 02-access-control.md
+   └─ 03-signature-replay.md
 ```
 
 ## Dependencies
@@ -144,7 +145,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **11 passing tests** across two complete modules plus the in-progress Signature Replay module.
+The lab currently ships with **11 passing tests** across three complete modules.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -186,7 +187,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | --- | --- |
 | Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
-| Signature Replay | 🟡 In progress — vulnerable + fixed airdrop + tests; writeup next |
+| Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
 | Oracle Manipulation | ⚪ Planned |
 | Upgradeable Proxy | ⚪ Planned |
 
