@@ -10,7 +10,8 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Reentrancy** module complete — vulnerable contract, attacker, fix, 3 passing tests, audit-style writeup
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
-- ⚪ Oracle Manipulation, Upgradeable Proxy — planned
+- 🟡 **Oracle Manipulation** module in progress — vulnerable AMM spot-price oracle + lending PoC tests
+- ⚪ Upgradeable Proxy — planned
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
 
@@ -58,6 +59,19 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - [x] [`reports/03-signature-replay.md`](reports/03-signature-replay.md)
   Audit-style writeup: severity, replay impact, root cause, PoC, recommendation, fixed implementation, and learnings.
 
+## Oracle Manipulation — AMM Spot Price PoC
+
+- [x] `src/oracle-manipulation/SimpleAMM.sol`
+  A deliberately simplified constant-product AMM whose spot price can be moved by changing reserves.
+- [x] `src/oracle-manipulation/VulnerableLending.sol`
+  A toy lending market that directly trusts the AMM spot price to calculate borrowing power.
+- [x] `test/oracle-manipulation/OracleManipulationPoC.t.sol`
+  Foundry PoC test suite:
+  - `testExploit_SpotPriceManipulationInflatesBorrowLimit` — proves manipulating the AMM spot price inflates the borrow limit and drains pool liquidity
+  - `testNormalPriceOnlyAllowsLimitedBorrow` — sanity check showing the normal price only allows a much smaller borrow
+- [ ] `reports/04-oracle-manipulation.md`
+  Planned audit-style writeup covering spot price risk, root cause, PoC, and mitigation.
+
 ## Project Structure
 
 ```text
@@ -79,6 +93,9 @@ smart-contract-security-lab/
 │  ├─ access-control/
 │  │  ├─ VulnerableTreasury.sol
 │  │  └─ FixedTreasury.sol
+│  ├─ oracle-manipulation/
+│  │  ├─ SimpleAMM.sol
+│  │  └─ VulnerableLending.sol
 │  └─ signature-replay/
 │     ├─ VulnerableAirdrop.sol
 │     └─ FixedAirdrop.sol
@@ -87,6 +104,8 @@ smart-contract-security-lab/
 │  │  └─ ReentrancyPoC.t.sol
 │  ├─ access-control/
 │  │  └─ AccessControlPoC.t.sol
+│  ├─ oracle-manipulation/
+│  │  └─ OracleManipulationPoC.t.sol
 │  └─ signature-replay/
 │     └─ SignatureReplayPoC.t.sol
 └─ reports/
@@ -145,7 +164,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **11 passing tests** across three complete modules.
+The lab currently ships with **13 passing tests** across three complete modules plus the in-progress Oracle Manipulation module.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -166,6 +185,11 @@ The lab currently ships with **11 passing tests** across three complete modules.
 - `testExploit_SameSignatureClaimsTwice` — proves the same signature can be replayed to claim twice.
 - `testFix_BlocksSignatureReplay` — proves nonce consumption blocks replaying the same signature.
 - `testFix_RejectsExpiredSignature` — proves signatures cannot be used after their deadline.
+
+**Oracle Manipulation** (`test/oracle-manipulation/`):
+
+- `testExploit_SpotPriceManipulationInflatesBorrowLimit` — proves AMM spot-price manipulation inflates borrowing power.
+- `testNormalPriceOnlyAllowsLimitedBorrow` — proves the unmanipulated price enforces the expected lower borrow limit.
 
 Run all tests:
 
@@ -188,7 +212,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
-| Oracle Manipulation | ⚪ Planned |
+| Oracle Manipulation | 🟡 In progress — AMM spot-price oracle + vulnerable lending tests |
 | Upgradeable Proxy | ⚪ Planned |
 
 ## About the Author
