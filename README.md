@@ -10,7 +10,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Reentrancy** module complete — vulnerable contract, attacker, fix, 3 passing tests, audit-style writeup
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
-- 🟡 **Oracle Manipulation** module in progress — vulnerable AMM spot-price oracle + lending PoC tests
+- 🟡 **Oracle Manipulation** module in progress — vulnerable + fixed lending, TWAP oracle, 4 passing tests; report pending
 - ⚪ Upgradeable Proxy — planned
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
@@ -65,10 +65,16 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
   A deliberately simplified constant-product AMM whose spot price can be moved by changing reserves.
 - [x] `src/oracle-manipulation/VulnerableLending.sol`
   A toy lending market that directly trusts the AMM spot price to calculate borrowing power.
+- [x] `src/oracle-manipulation/TWAPOracle.sol`
+  Records cumulative AMM prices so lending can consult a time-weighted average instead of spot.
+- [x] `src/oracle-manipulation/FixedLending.sol`
+  Hardened lending market that prices collateral with `TWAPOracle.consult()` instead of `getSpotPrice()`.
 - [x] `test/oracle-manipulation/OracleManipulationPoC.t.sol`
   Foundry PoC test suite:
   - `testExploit_SpotPriceManipulationInflatesBorrowLimit` — proves manipulating the AMM spot price inflates the borrow limit and drains pool liquidity
   - `testNormalPriceOnlyAllowsLimitedBorrow` — sanity check showing the normal price only allows a much smaller borrow
+  - `testFix_BlocksSpotPriceManipulation` — proves the same manipulation cannot drain the pool when TWAP pricing is used
+  - `testFix_AllowsHonestBorrow` — sanity check that legitimate users can still borrow against the TWAP price
 - [ ] `reports/04-oracle-manipulation.md`
   Planned audit-style writeup covering spot price risk, root cause, PoC, and mitigation.
 
@@ -95,7 +101,9 @@ smart-contract-security-lab/
 │  │  └─ FixedTreasury.sol
 │  ├─ oracle-manipulation/
 │  │  ├─ SimpleAMM.sol
-│  │  └─ VulnerableLending.sol
+│  │  ├─ VulnerableLending.sol
+│  │  ├─ TWAPOracle.sol
+│  │  └─ FixedLending.sol
 │  └─ signature-replay/
 │     ├─ VulnerableAirdrop.sol
 │     └─ FixedAirdrop.sol
@@ -164,7 +172,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **13 passing tests** across three complete modules plus the in-progress Oracle Manipulation module.
+The lab currently ships with **15 passing tests** across three complete modules plus the in-progress Oracle Manipulation module.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -190,6 +198,8 @@ The lab currently ships with **13 passing tests** across three complete modules 
 
 - `testExploit_SpotPriceManipulationInflatesBorrowLimit` — proves AMM spot-price manipulation inflates borrowing power.
 - `testNormalPriceOnlyAllowsLimitedBorrow` — proves the unmanipulated price enforces the expected lower borrow limit.
+- `testFix_BlocksSpotPriceManipulation` — proves TWAP pricing blocks the same spot-price manipulation attack.
+- `testFix_AllowsHonestBorrow` — proves legitimate users can still borrow against the TWAP price.
 
 Run all tests:
 
@@ -212,7 +222,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
-| Oracle Manipulation | 🟡 In progress — AMM spot-price oracle + vulnerable lending tests |
+| Oracle Manipulation | 🟡 In progress — vulnerable + TWAP fix + tests; writeup pending |
 | Upgradeable Proxy | ⚪ Planned |
 
 ## About the Author
