@@ -197,7 +197,7 @@ forge test
 Expected result:
 
 ```text
-11 tests passed, 0 failed
+15 tests passed, 0 failed
 ```
 
 ## Notes and Learnings

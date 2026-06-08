@@ -10,7 +10,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Reentrancy** module complete — vulnerable contract, attacker, fix, 3 passing tests, audit-style writeup
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
-- 🟡 **Oracle Manipulation** module in progress — vulnerable + fixed lending, TWAP oracle, 4 passing tests; report pending
+- ✅ **Oracle Manipulation** module complete — vulnerable + fixed lending, TWAP oracle, 4 passing tests, audit-style writeup
 - ⚪ Upgradeable Proxy — planned
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
@@ -75,8 +75,8 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
   - `testNormalPriceOnlyAllowsLimitedBorrow` — sanity check showing the normal price only allows a much smaller borrow
   - `testFix_BlocksSpotPriceManipulation` — proves the same manipulation cannot drain the pool when TWAP pricing is used
   - `testFix_AllowsHonestBorrow` — sanity check that legitimate users can still borrow against the TWAP price
-- [ ] `reports/04-oracle-manipulation.md`
-  Planned audit-style writeup covering spot price risk, root cause, PoC, and mitigation.
+- [x] [`reports/04-oracle-manipulation.md`](reports/04-oracle-manipulation.md)
+  Audit-style writeup: severity, spot-price oracle risk, root cause, PoC, TWAP mitigation, fixed implementation, and learnings.
 
 ## Project Structure
 
@@ -119,7 +119,8 @@ smart-contract-security-lab/
 └─ reports/
    ├─ 01-reentrancy.md
    ├─ 02-access-control.md
-   └─ 03-signature-replay.md
+   ├─ 03-signature-replay.md
+   └─ 04-oracle-manipulation.md
 ```
 
 ## Dependencies
@@ -172,7 +173,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **15 passing tests** across three complete modules plus the in-progress Oracle Manipulation module.
+The lab currently ships with **15 passing tests** across four complete modules.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -222,7 +223,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Reentrancy | ✅ Done — vulnerable + attacker + fix + tests + writeup |
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
-| Oracle Manipulation | 🟡 In progress — vulnerable + TWAP fix + tests; writeup pending |
+| Oracle Manipulation | ✅ Done — vulnerable + TWAP fix + tests + writeup |
 | Upgradeable Proxy | ⚪ Planned |
 
 ## About the Author
