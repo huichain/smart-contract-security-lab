@@ -11,7 +11,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
 - ✅ **Oracle Manipulation** module complete — vulnerable + fixed lending, TWAP oracle, 4 passing tests, audit-style writeup
-- ⚪ Upgradeable Proxy — planned
+- 🟡 **Upgradeable Proxy** — in progress — minimal proxy, unprotected `initialize` PoC, 2 passing tests
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
 
@@ -78,6 +78,18 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - [x] [`reports/04-oracle-manipulation.md`](reports/04-oracle-manipulation.md)
   Audit-style writeup: severity, spot-price oracle risk, root cause, PoC, TWAP mitigation, fixed implementation, and learnings.
 
+## Upgradeable Proxy — Minimal Proxy and Initialize PoC (WIP)
+
+- [x] `src/upgradeable-proxy/SimpleProxy.sol`
+  Minimal EIP-1967-style proxy: `fallback` forwards calls to the implementation via `delegatecall`.
+- [x] `src/upgradeable-proxy/ImplementationV1.sol`
+  Logic contract with a deliberately unprotected `initialize()` — anyone can set or overwrite `owner` in proxy storage.
+- [x] `test/upgradeable-proxy/ProxyPoC.t.sol`
+  Foundry PoC test suite (day 1):
+  - `testExploit_UnprotectedInitializeLetsAttackerTakeOwnership` — attacker calls `initialize` through the proxy and seizes `owner`
+  - `testExploit_AttackerCanReinitializeAndOverwriteOwner` — attacker re-initializes after the admin and overwrites ownership
+- [ ] Storage layout upgrade bug, fixed implementation, and audit-style writeup — planned next
+
 ## Project Structure
 
 ```text
@@ -104,9 +116,12 @@ smart-contract-security-lab/
 │  │  ├─ VulnerableLending.sol
 │  │  ├─ TWAPOracle.sol
 │  │  └─ FixedLending.sol
-│  └─ signature-replay/
-│     ├─ VulnerableAirdrop.sol
-│     └─ FixedAirdrop.sol
+│  ├─ signature-replay/
+│  │  ├─ VulnerableAirdrop.sol
+│  │  └─ FixedAirdrop.sol
+│  └─ upgradeable-proxy/
+│     ├─ SimpleProxy.sol
+│     └─ ImplementationV1.sol
 ├─ test/
 │  ├─ reentrancy/
 │  │  └─ ReentrancyPoC.t.sol
@@ -114,8 +129,10 @@ smart-contract-security-lab/
 │  │  └─ AccessControlPoC.t.sol
 │  ├─ oracle-manipulation/
 │  │  └─ OracleManipulationPoC.t.sol
-│  └─ signature-replay/
-│     └─ SignatureReplayPoC.t.sol
+│  ├─ signature-replay/
+│  │  └─ SignatureReplayPoC.t.sol
+│  └─ upgradeable-proxy/
+│     └─ ProxyPoC.t.sol
 └─ reports/
    ├─ 01-reentrancy.md
    ├─ 02-access-control.md
@@ -173,7 +190,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **15 passing tests** across four complete modules.
+The lab currently ships with **17 passing tests** across four complete modules plus the in-progress Upgradeable Proxy module.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -202,6 +219,11 @@ The lab currently ships with **15 passing tests** across four complete modules.
 - `testFix_BlocksSpotPriceManipulation` — proves TWAP pricing blocks the same spot-price manipulation attack.
 - `testFix_AllowsHonestBorrow` — proves legitimate users can still borrow against the TWAP price.
 
+**Upgradeable Proxy** (`test/upgradeable-proxy/`) — WIP:
+
+- `testExploit_UnprotectedInitializeLetsAttackerTakeOwnership` — proves an unprotected `initialize()` lets the attacker seize proxy ownership.
+- `testExploit_AttackerCanReinitializeAndOverwriteOwner` — proves a public initializer can overwrite an existing owner.
+
 Run all tests:
 
 ```bash
@@ -224,7 +246,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
 | Oracle Manipulation | ✅ Done — vulnerable + TWAP fix + tests + writeup |
-| Upgradeable Proxy | ⚪ Planned |
+| Upgradeable Proxy | 🟡 In progress — minimal proxy + initialize PoC (2 tests); storage layout + fix + writeup next |
 
 ## About the Author
 
