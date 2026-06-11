@@ -11,7 +11,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
 - ✅ **Oracle Manipulation** module complete — vulnerable + fixed lending, TWAP oracle, 4 passing tests, audit-style writeup
-- 🟡 **Upgradeable Proxy** — in progress — minimal proxy, unprotected `initialize` PoC, 2 passing tests
+- ✅ **Upgradeable Proxy** module complete — vulnerable + fixed implementation, 5 passing tests; audit-style writeup pending
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
 
@@ -78,17 +78,24 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - [x] [`reports/04-oracle-manipulation.md`](reports/04-oracle-manipulation.md)
   Audit-style writeup: severity, spot-price oracle risk, root cause, PoC, TWAP mitigation, fixed implementation, and learnings.
 
-## Upgradeable Proxy — Minimal Proxy and Initialize PoC (WIP)
+## Upgradeable Proxy — Minimal Proxy, Initialize PoC, Fix
 
 - [x] `src/upgradeable-proxy/SimpleProxy.sol`
   Minimal EIP-1967-style proxy: `fallback` forwards calls to the implementation via `delegatecall`.
 - [x] `src/upgradeable-proxy/ImplementationV1.sol`
   Logic contract with a deliberately unprotected `initialize()` — anyone can set or overwrite `owner` in proxy storage.
+- [x] `src/upgradeable-proxy/FixedImplementationV1.sol`
+  Hardened logic contract using OpenZeppelin `Initializable`: one-time `initializer` and `_disableInitializers()` on the implementation.
 - [x] `test/upgradeable-proxy/ProxyPoC.t.sol`
-  Foundry PoC test suite (day 1):
+  Foundry PoC test suite:
   - `testExploit_UnprotectedInitializeLetsAttackerTakeOwnership` — attacker calls `initialize` through the proxy and seizes `owner`
   - `testExploit_AttackerCanReinitializeAndOverwriteOwner` — attacker re-initializes after the admin and overwrites ownership
-- [ ] Storage layout upgrade bug, fixed implementation, and audit-style writeup — planned next
+  - `testFix_BlocksReinitialize` — proves replayed `initialize` calls revert and ownership stays with the admin
+  - `testFix_AllowsLegitimateInit` — sanity check that legitimate initialization and owner flows still work
+  - `testFix_BlocksDirectInitializeOnImplementation` — proves the bare implementation contract cannot be initialized directly
+- [ ] `reports/05-upgradeable-proxy.md`
+  Planned audit-style writeup covering unprotected initializer risk, PoC, mitigation, and fixed implementation.
+- [ ] Storage layout upgrade bug (optional follow-up) — `ImplementationV2` collision PoC
 
 ## Project Structure
 
@@ -121,7 +128,8 @@ smart-contract-security-lab/
 │  │  └─ FixedAirdrop.sol
 │  └─ upgradeable-proxy/
 │     ├─ SimpleProxy.sol
-│     └─ ImplementationV1.sol
+│     ├─ ImplementationV1.sol
+│     └─ FixedImplementationV1.sol
 ├─ test/
 │  ├─ reentrancy/
 │  │  └─ ReentrancyPoC.t.sol
@@ -190,7 +198,7 @@ forge build
 
 ### 4. Test
 
-The lab currently ships with **17 passing tests** across four complete modules plus the in-progress Upgradeable Proxy module.
+The lab currently ships with **20 passing tests** across five vulnerability modules.
 
 **Reentrancy** (`test/reentrancy/`):
 
@@ -219,10 +227,13 @@ The lab currently ships with **17 passing tests** across four complete modules p
 - `testFix_BlocksSpotPriceManipulation` — proves TWAP pricing blocks the same spot-price manipulation attack.
 - `testFix_AllowsHonestBorrow` — proves legitimate users can still borrow against the TWAP price.
 
-**Upgradeable Proxy** (`test/upgradeable-proxy/`) — WIP:
+**Upgradeable Proxy** (`test/upgradeable-proxy/`):
 
 - `testExploit_UnprotectedInitializeLetsAttackerTakeOwnership` — proves an unprotected `initialize()` lets the attacker seize proxy ownership.
 - `testExploit_AttackerCanReinitializeAndOverwriteOwner` — proves a public initializer can overwrite an existing owner.
+- `testFix_BlocksReinitialize` — proves the fixed implementation blocks replayed initialization.
+- `testFix_AllowsLegitimateInit` — proves legitimate admin initialization still works.
+- `testFix_BlocksDirectInitializeOnImplementation` — proves the logic contract address cannot be initialized directly.
 
 Run all tests:
 
@@ -246,7 +257,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
 | Oracle Manipulation | ✅ Done — vulnerable + TWAP fix + tests + writeup |
-| Upgradeable Proxy | 🟡 In progress — minimal proxy + initialize PoC (2 tests); storage layout + fix + writeup next |
+| Upgradeable Proxy | ✅ Done — vulnerable + fix + 5 tests; writeup + optional storage-layout PoC pending |
 
 ## About the Author
 
