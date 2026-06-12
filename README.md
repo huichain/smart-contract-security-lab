@@ -11,7 +11,7 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
 - ✅ **Access Control** module complete — vulnerable + fixed contracts, 5 passing tests, audit-style writeup
 - ✅ **Signature Replay** module complete — vulnerable airdrop, fixed implementation, 3 passing tests, audit-style writeup
 - ✅ **Oracle Manipulation** module complete — vulnerable + fixed lending, TWAP oracle, 4 passing tests, audit-style writeup
-- ✅ **Upgradeable Proxy** module complete — vulnerable + fixed implementation, 5 passing tests; audit-style writeup pending
+- ✅ **Upgradeable Proxy** module complete — vulnerable + fixed implementation, 5 passing tests, audit-style writeup
 
 ## Reentrancy — Vulnerable Vault, Exploit PoC, Fix, and Writeup
 
@@ -93,8 +93,8 @@ Each day adds one small, working piece: a vulnerable contract, an attacker, a fi
   - `testFix_BlocksReinitialize` — proves replayed `initialize` calls revert and ownership stays with the admin
   - `testFix_AllowsLegitimateInit` — sanity check that legitimate initialization and owner flows still work
   - `testFix_BlocksDirectInitializeOnImplementation` — proves the bare implementation contract cannot be initialized directly
-- [ ] `reports/05-upgradeable-proxy.md`
-  Planned audit-style writeup covering unprotected initializer risk, PoC, mitigation, and fixed implementation.
+- [x] [`reports/05-upgradeable-proxy.md`](reports/05-upgradeable-proxy.md)
+  Audit-style writeup: unprotected initializer risk, delegatecall storage model, PoC, `Initializable` mitigation, and learnings.
 - [ ] Storage layout upgrade bug (optional follow-up) — `ImplementationV2` collision PoC
 
 ## Project Structure
@@ -145,7 +145,8 @@ smart-contract-security-lab/
    ├─ 01-reentrancy.md
    ├─ 02-access-control.md
    ├─ 03-signature-replay.md
-   └─ 04-oracle-manipulation.md
+   ├─ 04-oracle-manipulation.md
+   └─ 05-upgradeable-proxy.md
 ```
 
 ## Dependencies
@@ -257,7 +258,7 @@ forge test --match-path test/access-control/AccessControlPoC.t.sol -vv
 | Access Control | ✅ Done — vulnerable + fix + tests + writeup |
 | Signature Replay | ✅ Done — vulnerable + fixed airdrop + tests + writeup |
 | Oracle Manipulation | ✅ Done — vulnerable + TWAP fix + tests + writeup |
-| Upgradeable Proxy | ✅ Done — vulnerable + fix + 5 tests; writeup + optional storage-layout PoC pending |
+| Upgradeable Proxy | ✅ Done — vulnerable + fix + 5 tests + writeup; optional storage-layout PoC pending |
 
 ## About the Author
 
